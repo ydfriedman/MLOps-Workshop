@@ -49,6 +49,9 @@ notebook starts the MLflow UI and tells you what to click):
    score new visits by alias; the world changes in 2025, so train a challenger, compare
    both on the **same** benchmark months, apply a written promotion rule, promote,
    roll back; follow the audit trail; serve the model over HTTP.
+3. **`3_ensemble.ipynb`** *(optional)*: track an ensemble (logistic + boosted trees + random forest, averaged)
+   as one **parent run** with a **child run per member**, all on the same test months; log what each member adds
+   (`roc_auc_without_<member>`); register the ensemble. Here it turns out *worse* than logistic alone (0.808 vs 0.812).
 
 Each notebook takes about a minute to run. The data (generated with the shared
 simulator) goes in `03-mlflow/data/`.
