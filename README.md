@@ -17,6 +17,7 @@ The seven malnutrition lessons are taught in two blocks (data, then model); see 
 | 6 | Prefect: the monthly pipeline that runs all of the above | [`malnutrition/06-prefect/`](malnutrition/06-prefect/) |
 | – | Use case: TB chest X-ray screening (Zambia study: acquisition drift vs population shift) | [`tb-chest-xray/`](tb-chest-xray/) |
 | – | Use case: an LLM assistant over the national guidelines: search as a versioned part, Ragas in depth, rubrics graded by people and by a checked judge, a cheaper model through the promotion rule | [`llm-cds/`](llm-cds/) |
+| – | The organisation's view: one MLflow server for every project. Malnutrition, TB and LLM pipelines report to it (with their Great Expectations and Evidently results); a portfolio notebook shows every project's champion and latest checks; how to swap the local server for a real one | [`central-mlflow/`](central-mlflow/) |
 
 ## Where each tool runs: training vs production, centre vs edge
 

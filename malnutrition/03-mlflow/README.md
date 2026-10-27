@@ -189,6 +189,10 @@ and points clients at it with `export MLFLOW_TRACKING_URI=http://<server>:5000`.
 (files and models: S3, MinIO, Azure, GCS, or a shared disk) can both live on-premises,
 which matters where health data must stay on government infrastructure.
 
+**See it working:** [`central-mlflow/`](../../central-mlflow/) runs one server for three projects
+(malnutrition, TB, LLM), each reporting its models and monthly checks to it, with a portfolio notebook for the
+organisation's view and the full steps for a real server (PostgreSQL, object storage, logins).
+
 ## Exercises
 
 1. In `1_tracking.ipynb`, add a run with `model="logistic", C=0.01`. Where does it rank?
