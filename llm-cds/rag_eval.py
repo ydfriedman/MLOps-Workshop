@@ -193,11 +193,12 @@ def use_local_store():
         mlflow.set_tracking_uri(f"sqlite:///{rag.HERE / 'mlflow.db'}")
 
 
-def evaluate_setup(settings, name, questions=None):
+def evaluate_setup(settings, name, questions=None, retriever=None):
     """Answer every question with this setup, judge each answer, log it all as one MLflow evaluation run.
 
     Returns a table with one row per question: sources and passages retrieved, answer, the three scores, and
-    a note for any check the judge could not score.
+    a note for any check the judge could not score. `retriever` replaces the one the settings would build
+    (for a search of your own, e.g. a hybrid of keywords and embeddings).
     """
     global _EMBEDDINGS
     if _EMBEDDINGS is None:
@@ -205,7 +206,7 @@ def evaluate_setup(settings, name, questions=None):
     questions = load_questions() if questions is None else questions
     for store in (_ANSWERS, _SCORES, _NOTES):
         store.clear()
-    retriever = rag.build(settings)
+    retriever = retriever or rag.build(settings)
     use_local_store()
     mlflow.autolog(disable=True)      # our own spans (search, llm) are the trace; automatic OpenAI tracing would
                                       # also trace every judge call, and its lazy imports can deadlock the 8 threads
