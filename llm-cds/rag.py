@@ -36,6 +36,12 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
+try:  # the API key can live in llm-cds/.env, one line: OPENROUTER_API_KEY=sk-or-...  (.env is never committed)
+    from dotenv import load_dotenv
+
+    load_dotenv(HERE / ".env")
+except ImportError:
+    pass
 REPO = HERE.parent
 DOCS = REPO / "downloads" / "guidelines"          # filled by: python scripts/download.py guidelines
 DOCS_MD = HERE / "guidelines_md"                  # the same PDFs as Markdown (LlamaParse, once: facilitator/parse_guidelines.py)

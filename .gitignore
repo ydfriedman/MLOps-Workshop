@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .venv/
+.env
 venv/
 
 # lesson scratch data (regenerate with malnutrition/00-data/simulate_emr.py)
