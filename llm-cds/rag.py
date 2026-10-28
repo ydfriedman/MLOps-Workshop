@@ -36,10 +36,14 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
-try:  # the API key can live in llm-cds/.env, one line: OPENROUTER_API_KEY=sk-or-...  (.env is never committed)
+ENV_FILE = HERE / ".env"                           # the API key lives here; ignored by git, so never committed
+if not ENV_FILE.exists():
+    ENV_FILE.write_text("# Paste the shared workshop key after the = sign, save, then restart the notebook's kernel.\n"
+                        "OPENROUTER_API_KEY=\n")
+try:
     from dotenv import load_dotenv
 
-    load_dotenv(HERE / ".env")
+    load_dotenv(ENV_FILE)
 except ImportError:
     pass
 REPO = HERE.parent
@@ -466,7 +470,8 @@ def llm_client(async_=False):
 
     key = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("LLM_API_KEY")
     if not key:
-        raise RuntimeError("no API key: set OPENROUTER_API_KEY (the shared workshop key) and try again")
+        raise RuntimeError(f"no API key: open {ENV_FILE}, paste the shared key after OPENROUTER_API_KEY=, save, "
+                           "and restart (the notebook's kernel, or the script)")
     base_url = os.environ.get("LLM_BASE_URL", OPENROUTER)
     return (AsyncOpenAI if async_ else OpenAI)(base_url=base_url, api_key=key, timeout=120, max_retries=3)
 

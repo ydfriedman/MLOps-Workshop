@@ -24,7 +24,7 @@ From the repo root, environment active:
 ```bash
 python scripts/download.py guidelines        # the six PDFs (26 MB)
 cd llm-cds
-# create a file .env here with one line, OPENROUTER_API_KEY=sk-or-...  (the shared key; never committed)
+python rag.py "cholera" --search-only           # first run creates .env: open it, paste the key after OPENROUTER_API_KEY=
 python rag.py "cholera alert" --docs markdown --chunking structure --retriever embed --search-only
 ```
 The last line downloads the small embedding model (67 MB) and embeds every passage once (a few minutes; cached in
