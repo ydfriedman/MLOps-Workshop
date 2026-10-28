@@ -2,9 +2,9 @@
 
 > **Status: ready, pending clinical review.** The three notebooks run live on hosted open-weight models
 > (OpenRouter, the shared key); only the LlamaParse Markdown is prepared in advance. `cases.csv`,
-> `eval_questions.csv` and `prescriptions.csv` are SIMULATED or drafted from the guideline text and still need a
-> clinician's review. The notebooks use only the **questions** in `eval_questions.csv`, not its draft reference
-> answers.
+> `questions.csv` and `prescriptions.csv` are SIMULATED or drafted from the guideline text and still need a
+> clinician's review. The notebooks use `questions.csv` (questions only, no reference answers); the older
+> `eval_questions.csv`, with draft reference answers, is used only by `evaluate.py` and the saved runs.
 
 A health worker describes a patient or asks a question; the assistant finds passages in six Ethiopian public health
 guidelines and an LLM answers **from those passages only**, citing pages (retrieval-augmented generation, RAG).
@@ -76,7 +76,8 @@ saved runs in `results/`.
 | `rag.py` | passages (`--docs pdf|markdown`, `--chunking fixed|structure`), search (keywords or embeddings), answer |
 | `evaluate.py` | the earlier, reference-based evaluation (right page, context recall, factual correctness); kept for the saved runs |
 | `explain_score.py` | one Ragas score claim by claim |
-| `eval_questions.csv` | 20 answerable + 4 out-of-scope questions with references and pages (draft, needs review) |
+| `questions.csv` | the notebooks' 24 questions: 10 in the guidelines' words, 10 in everyday words, 4 out of scope; the page that holds each answer |
+| `eval_questions.csv` | the earlier set with draft reference answers (`evaluate.py` and the saved runs only) |
 | `cases.py`, `cases.csv` | 20 SIMULATED vignettes: answer, grading sheet, agreement (Cohen, Fleiss), LLM judge, cost |
 | `grades/` | grading sheets; `facilitator_draft.csv` is a fallback draft, not clinical |
 | `check.py`, `evaluate_check.py`, `prescriptions.csv` | take-home: the prescription check (44 simulated records) |
@@ -101,7 +102,7 @@ saved runs in `results/`.
 
 ## Open items
 
-- Clinical review of `cases.csv` (cases to check first in the facilitator notes), `eval_questions.csv`,
+- Clinical review of `cases.csv` (cases to check first in the facilitator notes), `questions.csv`,
   `prescriptions.csv`; Yoni regrades `grades/facilitator_draft.csv`.
 - Licence: the Markdown in `guidelines_md/` is a full-text copy of the guidelines; confirm before publishing.
 - EFDA's current requirements for software as a medical device: not checked.

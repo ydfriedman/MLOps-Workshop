@@ -46,7 +46,7 @@ from mlflow.genai.scorers import scorer  # noqa: E402
 
 import rag  # noqa: E402
 
-QUESTIONS = rag.HERE / "eval_questions.csv"
+QUESTIONS = rag.HERE / "questions.csv"
 EXPERIMENT = "guideline-assistant"
 JUDGE_MODEL = os.environ.get("JUDGE_MODEL", "anthropic/claude-haiku-5.5")   # a strong model, fast and cheap
 JUDGE_SOURCE = AssessmentSource(source_type="LLM_JUDGE", source_id=JUDGE_MODEL)
@@ -54,8 +54,9 @@ METRICS = ["context_relevance", "groundedness", "answer_relevancy"]
 
 
 def load_questions():
-    """The 24 test questions (20 the guidelines answer, 4 they don't). Only the questions are used here."""
-    return pd.read_csv(QUESTIONS, dtype=str).fillna("")[["id", "type", "question"]]
+    """The 24 test questions: 20 the guidelines answer (10 in the guidelines' own words, 10 in everyday words) and
+    4 they don't. No reference answers: the judge needs none."""
+    return pd.read_csv(QUESTIONS, dtype=str).fillna("")[["id", "type", "wording", "question"]]
 
 
 # ---------------------------------------------------------------- the judge
@@ -225,11 +226,13 @@ def evaluate_setup(settings, name, questions=None, retriever=None):
              "passages": _ANSWERS.get(q, {}).get("passages", [])}
             for q in questions.question]
     per_question = questions.merge(pd.DataFrame(rows), on="question", how="left")
-    per_question["refused"] = per_question.answer.str.contains(rag.REFUSAL.rstrip("."), regex=False)
+    # the prompt's refusal sentence, also when the model words it slightly differently ("The provided guidelines...")
+    per_question["refused"] = (per_question.answer.str.lower().str.contains("do not cover this", regex=False)
+                               & (per_question.answer.str.len() < 100))
     summary = summarise(per_question)
     with mlflow.start_run(run_id=run.info.run_id):
         mlflow.log_metrics({k: float(v) for k, v in summary.items()})
-        mlflow.log_table(per_question.drop(columns=["type", "passages"]).astype(str), "per_question.json")
+        mlflow.log_table(per_question.drop(columns=["passages"]).astype(str), "per_question.json")
     print(f"{name}: " + ", ".join(f"{k} {v:.2f}" if v % 1 else f"{k} {v:.0f}" for k, v in summary.items())
           + f"   (MLflow run {run.info.run_id[:8]})")
     return per_question
@@ -238,3 +241,18 @@ def evaluate_setup(settings, name, questions=None, retriever=None):
 def compare(results):
     """{setup name: per-question table} -> one row per setup with the summary numbers."""
     return pd.DataFrame({name: summarise(t) for name, t in results.items()}).T.round(2)
+
+
+def compare_wording(results):
+    """The answerable questions split by wording (the guidelines' own words vs everyday words), for every setup:
+    how relevant the passages were, and how many questions the assistant wrongly refused."""
+    rows = {}
+    for name, t in results.items():
+        answerable = t[t.type == "answerable"]
+        for wording, part in answerable.groupby("wording"):
+            rows[(name, wording)] = {
+                "context_relevance": pd.to_numeric(part.context_relevance, errors="coerce").mean(),
+                "wrong_refusals": f"{int(part.refused.sum())} of {len(part)}"}
+    table = pd.DataFrame(rows).T
+    table["context_relevance"] = table.context_relevance.astype(float).round(2)
+    return table.unstack()

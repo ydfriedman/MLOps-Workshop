@@ -1,0 +1,25 @@
+id,type,wording,question,answer_in,answer_pages
+chol_01,answerable,everyday,"Two grown children in the same village got severe watery diarrhoea this week and one died. Is this a warning sign of an outbreak, and how soon must I report it?",ephi_cholera_2022,14
+chol_02,answerable,everyday,"A 7-year-old with severe watery diarrhoea has stopped throwing up. Which medicine kills the germ, how much do I give, and what if that one can't be used?",ephi_cholera_2022,38
+chol_03,answerable,everyday,"A 3-year-old with watery diarrhoea is very dry and weak and can't drink. How much fluid do I give through the vein, and how fast?",ephi_cholera_2022,29
+chol_04,answerable,guideline,"For a reactive oral cholera vaccination campaign with the stockpile vaccines, how far apart should the two doses be given, and from what age can people be vaccinated?",ephi_cholera_2022,70
+nutr_01,answerable,everyday,"In our survey 12% of young children are too thin, and there are no other problems such as disease outbreaks. What feeding programmes should we run?",ephi_emergency_nutrition_2022,30
+nutr_02,answerable,guideline,"In an emergency vitamin A supplementation round, what preventive dose and how often should infants aged 6–12 months and children over 1 year receive?",ephi_emergency_nutrition_2022,52
+nutr_03,answerable,everyday,Families in a camp have nothing to eat except what is handed out to them. How many calories a day should each person's share give?,ephi_emergency_nutrition_2022,38
+csd_01,answerable,guideline,Which diseases are prioritized for climate-sensitive disease surveillance in Ethiopia?,ephi_climate_sensitive_diseases_2022,55
+csd_02,answerable,guideline,"How long does the malaria parasite need to develop inside the mosquito at about 25 °C, and below what temperatures does this development fail to complete?",ephi_climate_sensitive_diseases_2022,57
+csd_03,answerable,everyday,A patient came in with sudden high fever and a stiff neck. When do I count this as a possible case of the infection of the brain lining?,ephi_climate_sensitive_diseases_2022,108
+cebs_01,answerable,guideline,"Under community and event-based surveillance, how many households is one CEBS focal person expected to look after?",ephi_cebs_2021,24
+cebs_02,answerable,everyday,"A baby of ten days stopped breastfeeding, the jaw is locked and the body goes rigid with spasms. Which disease could this be?",ephi_cebs_2021,14
+cebs_03,answerable,guideline,"Besides the listed priority diseases, what other kinds of events must be notified immediately under CEBS?",ephi_cebs_2021,15
+cebs_04,answerable,guideline,"At kebele level, who is the technical coordinator of CEBS, and where and how often should community notifications be reported onward?",ephi_cebs_2021,32
+sam_01,answerable,guideline,"A child in the outpatient therapeutic programme still hasn't met the cure criteria. After how long is she classed as a non-responder, and when would a child instead be counted as a defaulter?",moh_acute_malnutrition_2019,45
+sam_02,answerable,everyday,"A badly wasted toddler is eating well and has no other illness. Which germ-killing medicine is given to every such child, how much, and for how many days?",moh_acute_malnutrition_2019,56;118
+sam_03,answerable,everyday,"What upper-arm measurement means a pregnant or breastfeeding woman, or an old person, is moderately malnourished?",moh_acute_malnutrition_2019,25
+tb_01,answerable,everyday,"Someone lives with a family member who has TB, and we want to stop them getting sick too. Which tablet do they take, how much for grown-ups and for kids, for how long, and what goes with it?",moh_tb_2017,56;57
+tb_02,answerable,guideline,"For drug-susceptible TB, when do I record a treatment outcome as 'treatment failure' versus 'lost to follow-up'?",moh_tb_2017,62
+tb_03,answerable,guideline,"Within what time must a leprosy patient finish their MDT doses to be recorded as 'treatment completed', for paucibacillary and for multibacillary leprosy?",moh_tb_2017,162;163
+oos_01,out_of_scope,out of scope,What is the first-line drug and adult dose for uncomplicated P. falciparum malaria — should I use artemether-lumefantrine?,,
+oos_02,out_of_scope,out of scope,"How many vials of antivenom should be given for a venomous snakebite, and how is it administered?",,
+oos_03,out_of_scope,out of scope,At what ages should infants receive the rotavirus vaccine doses to help prevent diarrhoea?,,
+oos_04,out_of_scope,out of scope,Someone was bitten by a suspected rabid dog — what is the post-exposure rabies vaccine schedule?,,

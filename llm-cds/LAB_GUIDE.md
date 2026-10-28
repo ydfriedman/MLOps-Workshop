@@ -55,8 +55,8 @@ The last line downloads the small embedding model (67 MB) and embeds every passa
   **groundedness**, also called faithfulness (is the answer supported by the passages? hallucination), **answer
   relevancy** (does it answer what was asked?). Judge: `anthropic/claude-haiku-5.5`, a different, stronger model
   than the one answering.
-- The 24 questions in `eval_questions.csv` (20 the guidelines answer, 4 they don't). **Only the questions are
-  used**: the file's reference answers were drafted from the guidelines and never validated.
+- The 24 questions in `questions.csv`: 20 the guidelines answer (10 in the guidelines' own words, 10 in everyday
+  words, the way health workers and families ask) and 4 they don't. No reference answers: the judge needs none.
 - First only the search (which pages come back?), then one question judged by hand, then all 24
   (`rag_eval.evaluate_setup`, about a minute). Refusals are counted apart: a refusal is the right answer to an
   out-of-scope question, but the judge scores it 0.
