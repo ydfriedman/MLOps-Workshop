@@ -62,7 +62,7 @@ logging.getLogger("pypdf").setLevel(logging.ERROR)   # some PDFs trigger harmles
 class Settings:
     """Everything that defines one version of the assistant. Logged with every evaluation run."""
     model: str = "google/gemma-4-26b-a4b-it"      # open-weight (Apache-2.0), hosted on OpenRouter
-    retriever: str = "tfidf"                       # "tfidf" (shared words) or "embed" (meaning, EMBED_MODEL)
+    retriever: str = "tfidf"                       # "tfidf" (shared words), "embed" (meaning, EMBED_MODEL) or "hybrid"
     k: int = 5                                     # passages given to the model
     chunk_words: int = 200                         # passage length
     overlap_words: int = 40                        # overlap between consecutive passages
@@ -440,6 +440,23 @@ class EmbeddingRetriever:
         return self.passages.iloc[top].assign(score=scores[top])
 
 
+class HybridRetriever:
+    """Both searches: the best `from_keywords` passages by keywords, then the best by meaning that aren't in yet.
+
+    Keywords find questions written in the guideline's words (clinical vignettes); embeddings find everyday
+    wording. Notebook 3, exercise 5 builds the same thing by hand.
+    """
+
+    def __init__(self, passages, from_keywords=3):
+        self.keywords, self.meaning = Retriever(passages), EmbeddingRetriever(passages)
+        self.passages, self.from_keywords = self.keywords.passages, from_keywords
+
+    def search(self, question, k=5):
+        first = self.keywords.search(question, min(self.from_keywords, k))
+        extra = self.meaning.search(question, k)
+        return pd.concat([first, extra[~extra.text.isin(first.text)].head(k - len(first))])
+
+
 def build(settings=Settings(), folder=DOCS):
     """Load (or reuse) the passages for these chunk settings and return a Retriever."""
     INDEX_CACHE.mkdir(exist_ok=True)
@@ -458,6 +475,8 @@ def build(settings=Settings(), folder=DOCS):
     else:
         passages = make_passages(load_pages(folder), settings.chunk_words, settings.overlap_words)
         passages.to_parquet(cache, index=False)
+    if settings.retriever == "hybrid":
+        return HybridRetriever(passages)
     return EmbeddingRetriever(passages) if settings.retriever == "embed" else Retriever(passages)
 
 
@@ -521,7 +540,7 @@ def main():
     ap.add_argument("question")
     ap.add_argument("--model", default=Settings.model)
     ap.add_argument("--k", type=int, default=Settings.k)
-    ap.add_argument("--retriever", default=Settings.retriever, choices=["tfidf", "embed"])
+    ap.add_argument("--retriever", default=Settings.retriever, choices=["tfidf", "embed", "hybrid"])
     ap.add_argument("--docs", default=Settings.docs, choices=["pdf", "markdown"])
     ap.add_argument("--chunking", default=Settings.chunking, choices=CHUNKINGS, help="'structure' needs --docs markdown")
     ap.add_argument("--search-only", action="store_true", help="show the retrieved passages; no LLM call")

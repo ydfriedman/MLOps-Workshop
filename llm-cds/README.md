@@ -61,10 +61,11 @@ Parameters, licence note and quality checks: [`data/SOURCES.md`](data/SOURCES.md
 | [`1_build_rag.ipynb`](1_build_rag.ipynb) | why LLM systems need their own evaluation; parse, chunk, index, search, generate, step by step; the chat page |
 | [`2_evaluate_rag.ipynb`](2_evaluate_rag.ipynb) | evaluating without reference answers: context relevance, groundedness, answer relevancy (Ragas); 24 questions; MLflow traces |
 | [`3_improve_rag.ipynb`](3_improve_rag.ipynb) | Markdown vs PDF text, chunking by headings, embeddings vs keywords: each scored on the same questions and compared |
+| [`4_cds_assistant.ipynb`](4_cds_assistant.ipynb) | **Part 2.** From a chatbot to a clinical decision support tool: 20 SIMULATED patients, the hard cases, a planted instruction, traces |
+| [`5_grade_and_benchmark.ipynb`](5_grade_and_benchmark.ipynb) | a clinical rubric; grading alone on the chat page; agreement (Cohen's and Fleiss' kappa); an LLM judge checked against people; benchmarks (HealthBench) |
+| [`6_promote_and_validate.ipynb`](6_promote_and_validate.ipynb) | a cheaper challenger through a promotion rule written first: quality, safety, cost per case, variability, version pinning; validating a CDS tool in Ethiopia |
 
-[`LAB_GUIDE.md`](LAB_GUIDE.md) has the timings and PAUSEs, and extras for time left over (rubrics and grader
-agreement, a cheaper model through a promotion rule, validating an LLM tool in Ethiopia) that use the facilitators'
-saved runs in `results/`.
+[`LAB_GUIDE.md`](LAB_GUIDE.md) has the timings and PAUSEs.
 
 ## Files
 
@@ -72,13 +73,15 @@ saved runs in `results/`.
 |---|---|
 | `1_build_rag.ipynb`, `2_evaluate_rag.ipynb`, `3_improve_rag.ipynb` | the session |
 | `rag_eval.py` | reference-free evaluation of one setup (Ragas: context relevance, groundedness, answer relevancy; judge `anthropic/claude-haiku-5.5`), logged to MLflow as one run with a trace per question |
-| `chat_app.py` | the chat page: answer, passages, prompt; two setups side by side |
+| `chat_app.py` | the chat page: answer, passages, prompt; two setups side by side. `/grade`: the grading page of notebook 5 |
+| `cds.py` | Part 2: the CDS prompt, assessing cases (traced, logged to MLflow), the rubric and the judge, agreement, the planted-instruction check, scorecards |
 | `rag.py` | passages (`--docs pdf|markdown`, `--chunking fixed|structure`), search (keywords or embeddings), answer |
 | `evaluate.py` | the earlier, reference-based evaluation (right page, context recall, factual correctness); kept for the saved runs |
 | `explain_score.py` | one Ragas score claim by claim |
 | `questions.csv` | the notebooks' 24 questions: 10 in the guidelines' words, 10 in everyday words, 4 out of scope; the page that holds each answer |
 | `eval_questions.csv` | the earlier set with draft reference answers (`evaluate.py` and the saved runs only) |
-| `cases.py`, `cases.csv` | 20 SIMULATED vignettes: answer, grading sheet, agreement (Cohen, Fleiss), LLM judge, cost |
+| `cases.csv` | 20 SIMULATED vignettes with expected classification and action (not clinically reviewed) |
+| `cases.py` | the earlier command-line version of Part 2, with the facilitators' saved runs (21 Oct) |
 | `grades/` | grading sheets; `facilitator_draft.csv` is a fallback draft, not clinical |
 | `check.py`, `evaluate_check.py`, `prescriptions.csv` | take-home: the prescription check (44 simulated records) |
 | `guidelines_md/`, `data/SOURCES.md` | the guidelines as Markdown; sources, licence, parse parameters, comparisons |
@@ -97,6 +100,9 @@ saved runs in `results/`.
 | `fingerprint`, `source_ids` | `rag.py` | a short hash of the indexed text (changes when a document or the chunking changes) and `doc:p28` style source labels |
 | `evaluate_setup(settings, name)`, `compare(results)` | `rag_eval.py` | answer the 24 questions with one setup, judge each answer three ways, log it all to MLflow; one row per setup to compare |
 | `retrieval_checks`, `rule_checks`, `evaluate` | `evaluate.py` | right page in the top k; simple rules; Ragas scores; everything logged to MLflow |
+| `assess_all`, `show`, `planted_instruction` | `cds.py` | assess every case (8 at a time, one MLflow run); one answer in full; did it follow the planted instruction? |
+| `make_sheet`, `load_grades`, `agreement`, `judge_all`, `judge_vs_people` | `cds.py` | the grading sheet for the chat page; people's grades; kappa per criterion; the LLM judge; the judge against people |
+| `scorecard`, `repeatability`, `log_benchmark` | `cds.py` | the numbers a promotion rule talks about; the same case run several times; a benchmark run in MLflow |
 | `sheet`, `agreement`, `fleiss_kappa`, `judge` | `cases.py` | the grading sheet, agreement between graders (Cohen, Fleiss), the LLM judge, checked against people |
 | `call`, `cost` | `cases.py` | one LLM call with tokens, cost and seconds as OpenRouter reports them; total spend |
 

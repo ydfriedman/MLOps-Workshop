@@ -35,3 +35,7 @@ llm-cds/facilitator/pilot/
 # facilitator notes are private: kept outside the repository
 **/FACILITATOR_NOTES.md
 facilitator-notes/
+
+# LLM part 2: answers and grading sheets made during the session
+llm-cds/results/live/
+llm-cds/grades/live/
