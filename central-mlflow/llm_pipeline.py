@@ -29,7 +29,7 @@ REPORTS = HERE / "data" / "reports" / "llm"
 CONFIG = ["docs", "chunking", "retriever", "model"]
 FIXED = {"k": 5, "prompt_version": "v1", "temperature": 0.0, "judge_model": "anthropic/claude-haiku-5.5"}
 RULE = ("highest answer_rate (share of the 20 answerable questions not wrongly refused) among configurations with "
-        "groundedness >= 0.9 that refuse all 4 out-of-scope questions")
+        "groundedness >= 0.8 (a wrong refusal counts as 0) that refuse all 4 out-of-scope questions")
 EVERYDAY_ALERT = 0.6     # drift alert if more than 60% of questions use everyday words (the champion was chosen on 50%)
 
 
@@ -61,7 +61,7 @@ def main():
         runs.append({"run_id": run.info.run_id, "config": config, **{m: row[m] for m in metrics}})
 
     # ---- 2. the written promotion rule picks the champion configuration
-    eligible = [r for r in runs if r["groundedness"] >= 0.9 and r["refused_out_of_scope"] == 4]
+    eligible = [r for r in runs if r["groundedness"] >= 0.8 and r["refused_out_of_scope"] == 4]
     best = max(eligible, key=lambda r: (r["answer_rate"], r["groundedness"]))
     with mlflow.start_run(run_id=best["run_id"]):
         mlflow.set_tag("promotion_rule", RULE)

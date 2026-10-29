@@ -1,5 +1,5 @@
 docs,chunking,retriever,model,context_relevance,groundedness,answer_relevancy,wrong_refusals,refused_out_of_scope,context_relevance_everyday,context_relevance_guideline,wrong_refusals_everyday,wrong_refusals_guideline,answer_rate
-pdf,fixed,tfidf,google/gemma-4-26b-a4b-it,0.95,1.0,0.84,9,4,0.6,0.9,8,1,0.55
-markdown,fixed,tfidf,google/gemma-4-26b-a4b-it,0.91,0.96,0.76,6,4,0.62,0.95,5,1,0.7
-markdown,structure,tfidf,google/gemma-4-26b-a4b-it,1.0,1.0,0.83,8,4,0.6,1.0,8,0,0.6
-markdown,structure,embed,google/gemma-4-26b-a4b-it,1.0,0.96,0.78,2,4,0.95,1.0,2,0,0.9
+pdf,fixed,tfidf,google/gemma-4-26b-a4b-it,0.76,0.61,0.54,7,4,0.62,0.9,6,1,0.65
+markdown,fixed,tfidf,google/gemma-4-26b-a4b-it,0.78,0.62,0.53,7,4,0.62,0.92,6,1,0.65
+markdown,structure,tfidf,google/gemma-4-26b-a4b-it,0.81,0.65,0.53,7,4,0.62,1.0,7,0,0.65
+markdown,structure,embed,google/gemma-4-26b-a4b-it,0.96,0.86,0.71,2,4,0.95,0.98,2,0,0.9
