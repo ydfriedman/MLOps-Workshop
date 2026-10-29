@@ -208,6 +208,56 @@ def show(answers, case_id, run=0):
         print(f"[{n}] {source}: {text}\n")
 
 
+# ---------------------------------------------------------------- the same topic in every document
+
+
+def search_each_document(query, docs, k=1, settings=SEARCH):
+    """The best passage(s) for `query` from EACH of these documents separately (keyword search within one document),
+    so a definition that several guidelines give can be read side by side."""
+    passages = retriever(settings).passages
+    titles = rag.document_titles()
+    rows = []
+    for doc in docs:
+        hits = rag.Retriever(passages[passages.doc == doc].reset_index(drop=True)).search(query, k)
+        rows += [{"document": titles.get(doc, doc), "pages": rag.page_label(h.page, h.end_page), "text": h.text}
+                 for h in hits.itertuples()]
+    return pd.DataFrame(rows)
+
+
+COMPARE_DEFINITIONS = (
+    "You compare how several official health guidelines define the same thing. You get one passage from each "
+    "guideline, with its title and year. Find every point where they differ (an age, a threshold, a symptom, a time "
+    "limit, who must act). For each, say what each guideline says, quoting it, and what kind of difference it is:\n"
+    "- \"different purpose\": the definitions are meant for different users or levels on purpose (for example a "
+    "simple community definition for volunteers and a stricter one for clinicians);\n"
+    "- \"possibly different versions\": the same definition for the same users, with a value that looks like an older "
+    "or newer version;\n"
+    "- \"contradiction\": the same definition for the same users, with values that cannot both be followed.\n"
+    "Only use the passages. Reply with JSON only: {\"differences\": [{\"what\": \"...\", \"each_says\": "
+    "{\"<title>\": \"<quote>\"}, \"kind\": \"...\", \"why\": \"one sentence\"}]}")
+
+
+def compare_definitions(found, topic, judge_model=JUDGE_MODEL):
+    """Ask a strong model where the passages in `found` (from search_each_document) disagree about `topic`. A
+    starting point for a person to check, not a verdict."""
+    user = (f"Topic: {topic}. Compare only what the passages say about this topic; ignore other diseases or "
+            "subjects in them. If they say the same, return an empty list.\n\n"
+            + "\n\n".join(f"### {r.document}, {r.pages}\n{r.text}" for r in found.itertuples()))
+    for _ in range(3):
+        r = call(judge_model, COMPARE_DEFINITIONS, user, max_tokens=6000, json_mode=True, thinking_off=False)
+        hit = re.search(r"\{.*\}", r["text"], re.S)
+        try:
+            result = json.loads(hit.group(0)) if hit else None
+        except json.JSONDecodeError:
+            result = None
+        if result and "differences" in result:
+            break
+    rows = [{"what": d.get("what", ""), "kind": d.get("kind", ""), "why": d.get("why", ""),
+             **{f"says: {k}": v for k, v in (d.get("each_says") or {}).items()}}
+            for d in (result or {}).get("differences", [])]
+    return pd.DataFrame(rows)
+
+
 # ---------------------------------------------------------------- cost
 
 
