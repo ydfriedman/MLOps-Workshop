@@ -78,7 +78,8 @@ Parameters, licence note and quality checks: [`data/SOURCES.md`](data/SOURCES.md
 | `cases.csv` | Part 2's 20 SIMULATED vignettes with expected classification and action (not clinically reviewed) |
 | `guidelines_md/`, `data/SOURCES.md` | the guidelines as Markdown; sources, licence, how the Markdown was made, quality checks |
 | `facilitator/parse_guidelines.py` | LlamaParse, run once by the facilitators to make `guidelines_md/` |
-| `results/live/`, `grades/live/` | made during the session (answers, the grading sheet, people's grades); not in git |
+| `grades/sheet.json` | the 8 answers everyone grades in notebook 5 (from the facilitator's run of notebook 4) |
+| `results/live/`, `grades/live/` | made during the session (answers, people's grades); not in git |
 
 ## Helper functions in this lesson
 

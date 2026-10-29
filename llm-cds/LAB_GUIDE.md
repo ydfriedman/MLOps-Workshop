@@ -108,9 +108,10 @@ version, hybrid search.
 
 - Why Part 1's checks aren't enough: grounded is not the same as right for this patient.
 - **The rubric:** six yes/no criteria (classification, safe, urgency, grounded, complete, acceptable).
-- **Grade alone** on the chat page, **http://127.0.0.1:8000/grade** (restart `python chat_app.py` first). In the room
-  the facilitator shares `grades/live/sheet.json` so everyone grades the same 8 answers, and collects the saved
-  `grades/live/<name>.csv` files for the room's agreement.
+- **Grade alone**, on your own laptop, on the chat page **http://127.0.0.1:8000/grade** (restart `python chat_app.py`
+  first). Everyone grades the same 8 answers, stored in the repository (`grades/sheet.json`). Send the saved
+  `grades/live/<your name>.csv` to the facilitator on WhatsApp; the facilitator puts all files in `grades/live/` on
+  the projector laptop for the room's agreement.
 - **Agreement:** percent agreement flatters; Cohen's kappa (two graders) and Fleiss' kappa (three or more), worked
   through by hand on made-up grades first. Then ours, criterion by criterion; the criterion we split on most.
 - **An LLM judge** (`anthropic/claude-sonnet-5.5`) applies the same rubric to all 20 answers; compared with the

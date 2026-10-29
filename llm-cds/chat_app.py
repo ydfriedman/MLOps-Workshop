@@ -8,7 +8,7 @@ model) on the left; tick "compare" to ask the same question with two setups side
 Needs OPENROUTER_API_KEY for answers; "search only" works without it.
 
 http://127.0.0.1:8000/grade is the grading page of notebook 5: the assistant's answers to SIMULATED cases, graded
-yes/no on each criterion of the rubric, saved in grades/live/<your name>.csv.
+yes/no on each criterion of the rubric (the 8 answers in grades/sheet.json), saved in grades/live/<your name>.csv.
 """
 import csv
 import html
@@ -26,7 +26,8 @@ from pydantic import BaseModel
 
 import rag
 
-GRADES = rag.HERE / "grades" / "live"            # the grading sheet (made by notebook 5) and the filled-in grades
+GRADES = rag.HERE / "grades" / "live"            # the filled-in grades (and an exercise's own sheet, if made)
+WORKSHOP_SHEET = rag.HERE / "grades" / "sheet.json"   # the workshop's 8 answers, committed: everyone grades the same
 
 app = FastAPI()
 TITLES = rag.document_titles()
@@ -182,19 +183,24 @@ def grader_file(name):
     return GRADES / f"{re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_') or 'grader'}.csv"
 
 
+def sheet_path():
+    """An exercise's own sheet (grades/live/sheet.json) while it exists; otherwise the workshop's sheet."""
+    return GRADES / "sheet.json" if (GRADES / "sheet.json").exists() else WORKSHOP_SHEET
+
+
 @app.get("/grade/sheet")
 def grade_sheet():
-    sheet = GRADES / "sheet.json"
-    if not sheet.exists():
-        return {"error": "No grading sheet yet: run the cell with cds.make_sheet(...) in notebook 5, then reload."}
-    return json.loads(sheet.read_text()) | {"saved": sorted(p.stem for p in GRADES.glob("*.csv"))}
+    if not sheet_path().exists():
+        return {"error": "No grading sheet: grades/sheet.json is missing. Run git pull and reload."}
+    return json.loads(sheet_path().read_text()) | {"saved": sorted(p.stem for p in GRADES.glob("*.csv"))}
 
 
 @app.post("/grade/save")
 def grade_save(g: Grades):
-    if not (GRADES / "sheet.json").exists():
-        return {"error": "No grading sheet: run cds.make_sheet(...) in notebook 5 first."}
-    sheet = json.loads((GRADES / "sheet.json").read_text())
+    if not sheet_path().exists():
+        return {"error": "No grading sheet: grades/sheet.json is missing. Run git pull and reload."}
+    sheet = json.loads(sheet_path().read_text())
+    GRADES.mkdir(parents=True, exist_ok=True)
     criteria, ids = list(sheet["rubric"]), [a["answer_id"] for a in sheet["answers"]]
     missing = [f"{i} {k}" for i in ids for k in criteria if g.grades.get(i, {}).get(k) not in ("yes", "no")]
     if not g.grader.strip():
@@ -291,7 +297,7 @@ document.getElementById("save").onclick = async () => {
   const r = await (await fetch("/grade/save", {method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify({grader: document.getElementById("name").value, grades})})).json();
   st.className = "msg " + (r.error ? "err" : "ok");
-  st.textContent = r.error ? r.error : "Saved: " + r.saved + ". Don't discuss your grades until your whole group has saved.";
+  st.textContent = r.error ? r.error : "Saved: llm-cds/" + r.saved + ". Send this file to the facilitator. Don't discuss your grades until everyone has saved.";
 };
 load();
 </script></body></html>"""

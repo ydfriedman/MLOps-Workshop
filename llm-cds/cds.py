@@ -10,8 +10,9 @@ cases.csv holds 20 SIMULATED vignettes (no real patients), ambiguous by design, 
 on and the expected classification and action, written from the guideline and NOT clinically reviewed. case20's
 passages contain a planted instruction: a SIMULATED prompt injection (INJECTION below).
 
-Answers are saved in results/live/ (not committed) so the next notebook can read them; grading sheets filled on
-the chat page (http://127.0.0.1:8000/grade) are saved in grades/live/.
+Answers are saved in results/live/ (not committed) so the next notebook can read them. The 8 answers people grade
+are committed (grades/sheet.json), so every laptop grades the same ones; the grades filled in on the chat page
+(http://127.0.0.1:8000/grade) are saved in grades/live/<name>.csv.
 """
 import hashlib
 import json
@@ -328,15 +329,32 @@ def log_benchmark(answers, grades, name):
 # ---------------------------------------------------------------- people's grades and agreement
 
 
-def make_sheet(answers, ids=EXERCISE):
-    """The grading sheet for the chat page (http://127.0.0.1:8000/grade): these answers, one at a time."""
+SHEET = rag.HERE / "grades" / "sheet.json"    # the workshop's 8 answers to grade, committed: everyone grades the same
+
+
+def make_sheet(answers, ids=EXERCISE, path=None):
+    """Write a grading sheet for the chat page (http://127.0.0.1:8000/grade): these answers, one at a time.
+
+    The workshop's sheet is committed (grades/sheet.json); this writes grades/live/sheet.json, which the chat page
+    shows instead while it exists (exercise 1). Delete that file to go back to the workshop's sheet.
+    """
     cases = load_cases().set_index("id")
-    sheet = [{"answer_id": i, "vignette": cases.loc[i, "vignette"], "answer": row.answer,
+    sheet = [{"answer_id": i, "vignette": cases.loc[i, "vignette"], "answer": row.answer, "model": row.model,
+              "prompt_version": row.prompt_version, "sources": list(row.sources), "raw_passages": list(row.passages),
               "passages": [f"[{n}] {s}: {t}" for n, (s, t) in enumerate(zip(row.sources, row.passages), 1)]}
              for i in ids for row in [answers[(answers.id == i) & (answers.run == 0)].iloc[0]]]
-    GRADES.mkdir(parents=True, exist_ok=True)
-    (GRADES / "sheet.json").write_text(json.dumps({"rubric": RUBRIC, "answers": sheet}, ensure_ascii=False))
-    print(f"grading sheet ready: {len(sheet)} answers. Open http://127.0.0.1:8000/grade")
+    path = path or GRADES / "sheet.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"rubric": RUBRIC, "answers": sheet}, ensure_ascii=False, indent=1))
+    print(f"grading sheet ready: {len(sheet)} answers in {path.relative_to(rag.HERE)}. Open http://127.0.0.1:8000/grade")
+
+
+def sheet_answers(path=SHEET):
+    """The answers on the workshop's grading sheet, in the same form as assess_all's (so the judge can grade them)."""
+    sheet = json.loads(path.read_text())
+    return pd.DataFrame([{"id": a["answer_id"], "run": 0, "model": a["model"], "prompt_version": a["prompt_version"],
+                          "answer": a["answer"], "sources": a["sources"], "passages": a["raw_passages"]}
+                         for a in sheet["answers"]])
 
 
 def load_grades():
