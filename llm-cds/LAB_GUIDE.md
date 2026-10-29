@@ -131,18 +131,11 @@ version, hybrid search.
   deployment, prospective pilot, after release, regulation) mapped to Tier C's gates, and which parts of this lesson
   become the monitoring. Discussion: who owns each stage?
 
-The older command-line versions of Part 2 (`cases.py`, with the facilitators' saved runs from 21 Oct in `results/`)
-still work, for reference.
-
 ## Take-home
 
-1. **The prescription check.** The same pipeline inside an EMR: does it catch dosing errors?
-   `check.py`, `evaluate_check.py`, `prescriptions.csv` (44 simulated records). Saved runs: PDF vs Markdown,
-   fixed vs structure chunks, v1 (the LLM decides) vs v2 (the LLM reads, Python counts); results in
-   `data/SOURCES.md` and `results/check_*.csv`.
-2. **Grade all 20 cases** (notebook 5: `cds.make_sheet(answers, ids=list(cases.id))`), and compare with the judge
+1. **Grade all 20 cases** (notebook 5: `cds.make_sheet(answers, ids=list(cases.id))`), and compare with the judge
    on every criterion.
-3. **Your own benchmark**: ten cases from a guideline you know, with expected answers reviewed by a colleague; run
+2. **Your own benchmark**: ten cases from a guideline you know, with expected answers reviewed by a colleague; run
    them through notebooks 4–6.
-4. **Self-hosted**: `LLM_BASE_URL=http://<server>:11434/v1 LLM_API_KEY=anything` (Ollama, vLLM). Real patient data
+3. **Self-hosted**: `LLM_BASE_URL=http://<server>:11434/v1 LLM_API_KEY=anything` (Ollama, vLLM). Real patient data
    must never go to a hosted service.

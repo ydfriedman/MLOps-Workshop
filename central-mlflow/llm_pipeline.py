@@ -3,7 +3,7 @@ then run two weekly checks.
 
     python llm_pipeline.py
 
-No API key or internet needed: it reads the evaluation results the LLM lesson saved (../llm-cds/results/).
+No API key or internet needed: it reads saved evaluation results of the LLM lesson (llm_results/).
 What gets versioned here is a **configuration** (documents, chunking, search, language model), because that
 is what defines a version of an LLM application.
 
@@ -46,7 +46,7 @@ def main():
     documents = guidelines_md5()
 
     # ---- 1. every configuration evaluated in the LLM lesson, as one evaluation run each
-    table = pd.read_csv(LLM / "results" / "search_and_ragas.csv")
+    table = pd.read_csv(HERE / "llm_results" / "search_and_ragas.csv")
     metrics = [c for c in table.columns if c not in CONFIG]
     runs = []
     for _, row in table.iterrows():
@@ -63,7 +63,7 @@ def main():
     best = max(eligible, key=lambda r: r["factual_correctness"])
     with mlflow.start_run(run_id=best["run_id"]):
         mlflow.set_tag("promotion_rule", RULE)
-        mlflow.log_artifact(str(LLM / "results" / "search_and_ragas.csv"), artifact_path="reports")
+        mlflow.log_artifact(str(HERE / "llm_results" / "search_and_ragas.csv"), artifact_path="reports")
         info = mlflow.pyfunc.log_model(name="assistant-config", python_model=str(HERE / "assistant_config_model.py"),
                                        model_config=best["config"] | FIXED | {"guidelines_md5": documents})
     version = hub.promote(info.model_uri, "llm-cds.guideline-assistant", tags, headline_metric="factual_correctness",
@@ -78,7 +78,7 @@ def main():
     #      (The lesson's test questions stand in for a week of real questions.)
     champion = mlflow.pyfunc.load_model("models:/llm-cds.guideline-assistant@champion")   # read from the registry
     evaluated_on = champion.model_config["guidelines_md5"]
-    questions = pd.read_csv(LLM / "results" / "per_question_baseline.csv")
+    questions = pd.read_csv(HERE / "llm_results" / "per_question_baseline.csv")
     amharic = (questions["type"] == "amharic").mean()
     cholera = "ephi_cholera_2022.md"
     weeks = {"week 1": guidelines_md5(),

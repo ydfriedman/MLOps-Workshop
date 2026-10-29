@@ -1,10 +1,8 @@
 # LLM clinical decision support (CDS): a guideline assistant, and how to evaluate it
 
-> **Status: ready, pending clinical review.** The three notebooks run live on hosted open-weight models
-> (OpenRouter, the shared key); only the LlamaParse Markdown is prepared in advance. `cases.csv`,
-> `questions.csv` and `prescriptions.csv` are SIMULATED or drafted from the guideline text and still need a
-> clinician's review. The notebooks use `questions.csv` (questions only, no reference answers); the older
-> `eval_questions.csv`, with draft reference answers, is used only by `evaluate.py` and the saved runs.
+> **Status: ready, pending clinical review.** The six notebooks run live on hosted open-weight models
+> (OpenRouter, the shared key); only the LlamaParse Markdown is prepared in advance. `questions.csv` and
+> `cases.csv` are SIMULATED or drafted from the guideline text and still need a clinician's review.
 
 A health worker describes a patient or asks a question; the assistant finds passages in six Ethiopian public health
 guidelines and an LLM answers **from those passages only**, citing pages (retrieval-augmented generation, RAG).
@@ -71,22 +69,16 @@ Parameters, licence note and quality checks: [`data/SOURCES.md`](data/SOURCES.md
 
 | File | What |
 |---|---|
-| `1_build_rag.ipynb`, `2_evaluate_rag.ipynb`, `3_improve_rag.ipynb` | the session |
+| `1_build_rag.ipynb` … `6_promote_and_validate.ipynb` | the session: Part 1 (notebooks 1–3), Part 2 (4–6) |
 | `rag_eval.py` | reference-free evaluation of one setup (Ragas: context relevance, groundedness, answer relevancy; judge `anthropic/claude-haiku-5.5`), logged to MLflow as one run with a trace per question |
 | `chat_app.py` | the chat page: answer, passages, prompt; two setups side by side. `/grade`: the grading page of notebook 5 |
 | `cds.py` | Part 2: the CDS prompt, assessing cases (traced, logged to MLflow), the rubric and the judge, agreement, the planted-instruction check, scorecards |
-| `rag.py` | passages (`--docs pdf|markdown`, `--chunking fixed|structure`), search (keywords or embeddings), answer |
-| `evaluate.py` | the earlier, reference-based evaluation (right page, context recall, factual correctness); kept for the saved runs |
-| `explain_score.py` | one Ragas score claim by claim |
-| `questions.csv` | the notebooks' 24 questions: 10 in the guidelines' words, 10 in everyday words, 4 out of scope; the page that holds each answer |
-| `eval_questions.csv` | the earlier set with draft reference answers (`evaluate.py` and the saved runs only) |
-| `cases.csv` | 20 SIMULATED vignettes with expected classification and action (not clinically reviewed) |
-| `cases.py` | the earlier command-line version of Part 2, with the facilitators' saved runs (21 Oct) |
-| `grades/` | grading sheets; `facilitator_draft.csv` is a fallback draft, not clinical |
-| `check.py`, `evaluate_check.py`, `prescriptions.csv` | take-home: the prescription check (44 simulated records) |
-| `guidelines_md/`, `data/SOURCES.md` | the guidelines as Markdown; sources, licence, parse parameters, comparisons |
-| `facilitator/` | `parse_guidelines.py` (LlamaParse, facilitator only), `check_quotes.py` |
-| `results/` | saved answers, verdicts, judge grades and scores (reused on re-runs; the offline fallback) |
+| `rag.py` | passages (`--docs pdf|markdown`, `--chunking fixed|structure`), search (keywords, embeddings or hybrid), answer |
+| `questions.csv` | Part 1's 24 questions: 10 in the guidelines' words, 10 in everyday words, 4 out of scope; the page that holds each answer |
+| `cases.csv` | Part 2's 20 SIMULATED vignettes with expected classification and action (not clinically reviewed) |
+| `guidelines_md/`, `data/SOURCES.md` | the guidelines as Markdown; sources, licence, how the Markdown was made, quality checks |
+| `facilitator/parse_guidelines.py` | LlamaParse, run once by the facilitators to make `guidelines_md/` |
+| `results/live/`, `grades/live/` | made during the session (answers, the grading sheet, people's grades); not in git |
 
 ## Helper functions in this lesson
 
@@ -95,21 +87,18 @@ Parameters, licence note and quality checks: [`data/SOURCES.md`](data/SOURCES.md
 | `Settings` | `rag.py` | everything that defines one version of the assistant (documents, chunking, search, prompt, model); logged with every run |
 | `load_pages`, `make_passages` | `rag.py` | PDF pages cut into overlapping passages (never across a page) |
 | `markdown_blocks`, `merge_continued_tables`, `make_structure_passages` | `rag.py` | the structure-aware route: Markdown split into blocks, a table carried over a page break rejoined, passages that follow headings |
-| `Retriever`, `EmbeddingRetriever`, `build` | `rag.py` | keyword search or embedding search over the passages |
+| `Retriever`, `EmbeddingRetriever`, `HybridRetriever`, `build` | `rag.py` | keyword search, embedding search, or both, over the passages |
 | `answer(question, retriever, settings)` | `rag.py` | retrieve, then generate; returns the answer and everything needed to evaluate it |
 | `fingerprint`, `source_ids` | `rag.py` | a short hash of the indexed text (changes when a document or the chunking changes) and `doc:p28` style source labels |
 | `evaluate_setup(settings, name)`, `compare(results)` | `rag_eval.py` | answer the 24 questions with one setup, judge each answer three ways, log it all to MLflow; one row per setup to compare |
-| `retrieval_checks`, `rule_checks`, `evaluate` | `evaluate.py` | right page in the top k; simple rules; Ragas scores; everything logged to MLflow |
 | `assess_all`, `show`, `planted_instruction` | `cds.py` | assess every case (8 at a time, one MLflow run); one answer in full; did it follow the planted instruction? |
 | `make_sheet`, `load_grades`, `agreement`, `judge_all`, `judge_vs_people` | `cds.py` | the grading sheet for the chat page; people's grades; kappa per criterion; the LLM judge; the judge against people |
 | `scorecard`, `repeatability`, `log_benchmark` | `cds.py` | the numbers a promotion rule talks about; the same case run several times; a benchmark run in MLflow |
-| `sheet`, `agreement`, `fleiss_kappa`, `judge` | `cases.py` | the grading sheet, agreement between graders (Cohen, Fleiss), the LLM judge, checked against people |
-| `call`, `cost` | `cases.py` | one LLM call with tokens, cost and seconds as OpenRouter reports them; total spend |
+| `call` | `cds.py` | one LLM call with tokens, cost, seconds and the provider that served it, as OpenRouter reports them |
 
 ## Open items
 
-- Clinical review of `cases.csv` (cases to check first in the facilitator notes), `questions.csv`,
-  `prescriptions.csv`; Yoni regrades `grades/facilitator_draft.csv`.
+- Clinical review of `cases.csv` (the cases and their expected answers) and `questions.csv`.
 - Licence: the Markdown in `guidelines_md/` is a full-text copy of the guidelines; confirm before publishing.
 - EFDA's current requirements for software as a medical device: not checked.
 - Real patient data never goes to a hosted service; `LLM_BASE_URL` points everything at a self-hosted server.

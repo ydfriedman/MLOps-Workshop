@@ -47,22 +47,6 @@ by [`../facilitator/parse_guidelines.py`](../facilitator/parse_guidelines.py). E
 
 ## Quality checks (2026-10-21)
 
-**Quotes** (`python facilitator/check_quotes.py`; per quote in `../facilitator/quote_check.csv`): 65 verbatim
-quotes (44 distinct) from `eval_questions.csv` and `prescriptions.csv`.
-
-| Text | whitespace normalised | + Markdown syntax removed | letters and digits only (check.py's test) |
-|---|---|---|---|
-| Markdown | 34 of 65 | 48 of 65 | **63 of 65** |
-| PDF text (pypdf) | 65 of 65 | 65 of 65 | 65 of 65 |
-
-The quotes were copied from the pypdf text, so the PDF side matches by construction. Every miss is the quote's
-pypdf artefact, not an error in the Markdown: broken hyphenation ("individu- als", "diag- nosis", "consecu - tive"),
-stray spaces ("immedi ately", "6–1 1 months", "mg/ kg", "10 -14%"), a bullet glyph (U+F0B7, cebs_03), and table
-cells flattened in reading order. The only quote not found even as letters and digits (rx37, rx38) is the
-isoniazid weight-band table as pypdf flattens it, column by column ("< 5 5.1-9.9 … >25 50 100 … 300"); the
-Markdown has the same cells row by row (`|< 5|50|½ tablet|`). Those quotes should be re-copied from the Markdown if
-the lesson switches to it.
-
 **Tables checked by eye against the PDF**, cell by cell, all exact: cholera p29 (Plan C Ringer's lactate, age
 bands), p38 (antibiotics, two-column page); acute malnutrition p41 (OTP routine medicines), p58 (vitamin A by age),
 p87 (TSFP medicines), p120 (F-75 volumes, 32 weight bands × 5 columns); emergency nutrition p52 (vitamin A
@@ -73,7 +57,7 @@ extra arrow, the full run did not).
 **Known imperfections**: footnote letters run into the text ("Volume of F-75 per Feed (ml)a"); rows that span a
 table (bedaquiline in Annex 6) sit in the first value column; a heading carries over to the next page when that page
 has none of its own (acute malnutrition p25 is under "Hospital Level" from p24). The documents contain no Amharic
-text: Amharic only enters through two questions in `eval_questions.csv`.
+text.
 
 ## Chunking, PDF vs Markdown (2026-10-21)
 
@@ -92,50 +76,4 @@ Two ways to cut the text into passages, set by `--chunking` (rag.py):
   417 of 1,187 passages span more than one page; mean 189 words, 19 over 400 (whole tables, up to 2,167 words
   for the F-75 annex: the embedding model reads only its first ~512 tokens).
 
-**Retrieval only** (no LLM): right page among k=5 passages for the 22 answerable questions in
-`eval_questions.csv`, and among k=8 for the 43 records with a page in `prescriptions.csv`. "Hit" counts the page
-range; "first page" counts only a passage's first page (a strict lower bound for structure-based passages);
-"pages read" is how many PDF pages the k passages cover on average (more pages = more text for the same k).
-
-| Text | Chunking | Search | Passages | Eval hit | Eval, first page | Pages read | Check hit | Check, first page | Pages read |
-|---|---|---|---|---|---|---|---|---|---|
-| PDF | fixed | keyword | 2,163 | 17/22 | 17/22 | 5.0 | 35/43 | 35/43 | 8.0 |
-| PDF | fixed | embedding | 2,163 | 16/22 | 16/22 | 5.0 | 41/43 | 41/43 | 8.0 |
-| Markdown | fixed | keyword | 1,508 | 16/22 | 16/22 | 5.0 | 34/43 | 34/43 | 8.0 |
-| Markdown | fixed | embedding | 1,508 | 18/22 | 18/22 | 5.0 | 40/43 | 40/43 | 8.0 |
-| Markdown | structure | keyword | 1,187 | **20/22** | 16/22 | 6.9 | **41/43** | 38/43 | 10.3 |
-| Markdown | structure | embedding | 1,187 | 16/22 | 13/22 | 7.0 | **41/43** | 39/43 | 10.6 |
-
-The text alone (PDF vs Markdown, both fixed) moves retrieval by a question or two either way: noise at this
-size. Structure-based chunks with keyword search find the right page most often, but part of that is the range
-rule and the extra pages read (6.9 vs 5 per question); counted by first page only, they are no better. Embedding
-search gains nothing from structure, plausibly because long passages are truncated before embedding.
-
-**Prescription check v2** (default model `google/gemma-4-26b-a4b-it`, embeddings, k=8, judge `openai/gpt-oss-120b`),
-one run each; per record in `results/check_v2_llm_reads_python_counts*.csv`:
-
-| | PDF, fixed | Markdown, fixed | Markdown, structure |
-|---|---|---|---|
-| right page among the passages | 41/43 | 40/43 | 41/43 |
-| errors caught | 12 of 22 | 15 of 22 | **17 of 22** |
-| correct passed | 13 of 21 | 12 of 21 | **15 of 21** |
-| false alarms | 2 of 21 | 3 of 21 | 3 of 21 |
-| 'unsure' (sent to a person) | 13 of 44 | 7 of 44 | **6 of 44** |
-| verdict = expected | 26 of 44 | 28 of 44 | **33 of 44** |
-| empty verdict (reply not parseable) | 0 | 3 | 1 |
-| faithfulness (Ragas judge, 44 scored) | 0.24 | 0.24 | 0.33 |
-
-Most of the Markdown gain is the table-based records: on the PDF the LLM's quote from a flattened table (the
-isoniazid weight bands, rx36–rx40) fails the grounding test and the verdict is "unsure"; quoted from a Markdown
-table row it passes. Structure-based chunks add a few more right verdicts, as a dosing rule and its table now
-arrive in one passage. One run per configuration, so a difference of one or two records is within the model's
-run-to-run variation. Recurring on Markdown in both new runs: azithromycin's
-"max 1 g" extracted as a maximum of 1 (mg), which Python flags as inconsistent ("unsure", rx07–rx09 with fixed
-chunks, rx08–rx09 with structure); the Plan C quote copied across table cells, which fails the grounding test
-(rx10, "unsure"); and replies holding two JSON objects (a self-correction), which leave `check.parse()` with no
-verdict (rx42 in both; rx37 and rx39 too with fixed chunks).
-
-An earlier Markdown loader (page-bounded, cut at headings; replaced by the two above) is kept in
-`results/check_v2_llm_reads_python_counts_markdown.csv` for the record: 17/22 caught, 6/44 unsure; its judge scored
-only 17 of 44 records (OpenRouter 402: the account had no credit loaded, and OpenRouter reserves the worst-case
-cost of each in-flight request; the judge allows 8,192 output tokens, 4 at a time). Credit has since been added.
+How the choices compare on the lesson's own questions and cases: notebooks 3 and 4, run live.

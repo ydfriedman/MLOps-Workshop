@@ -157,6 +157,7 @@ to get one place. Each tool can also be run centrally on its own:
 | `checks.py` | runs Great Expectations and saves Evidently reports, so their results can be logged |
 | `malnutrition_pipeline.py`, `tb_pipeline.py`, `llm_pipeline.py` | one pipeline per team; each reuses its lesson's code |
 | `assistant_config_model.py` | the LLM project's registry entry ("models from code") |
+| `llm_results/` | saved evaluation results of the LLM lesson that `llm_pipeline.py` reads |
 | `portfolio.ipynb` | the organisation's view, read only from the server |
 | `data/` | local working files (simulated months, report files before upload); not in git |
 
