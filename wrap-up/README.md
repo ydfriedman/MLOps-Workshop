@@ -1,17 +1,18 @@
 # Wrap-up: an MLOps plan for an AI project (1 hour)
 
-All week you used one tool at a time. Now put them together: in a group, write the **MLOps plan** for one AI project,
-then present it.
+All week you used one tool at a time. Now put them together: in three groups, write the **MLOps plan** for one AI
+project, then present it.
 
 ## What to do
 
-1. **Form groups** of 3 to 5 (5 min).
+1. **Form three groups** (5 min).
 2. **Choose a project.** One of your own (best), or one from the list below.
-3. **Copy the template.** In VSCode: copy [`mlops_plan_template.md`](mlops_plan_template.md) to
-   `plan_<group name>.md` in this folder and fill it in together (30 min). Or write on paper.
+3. **Copy the template.** One person per group types, on their laptop: in VSCode, copy
+   [`mlops_plan_template.md`](mlops_plan_template.md) to `plan_<group name>.md` in this folder (or use a copy of the
+   shared doc) and fill it in together (30 min).
    [`example_plan_malnutrition.md`](example_plan_malnutrition.md) is a filled-in example from Day 1.
-4. **Present** the box at the top, "The plan on one page", in **4 minutes** (20 min for all groups). The other groups
-   ask one question each.
+4. **Present** the box at the top, "The plan on one page", in **5 minutes** from that laptop on the projector, then
+   2 minutes of questions from the other groups.
 
 Short answers are fine. If you don't know something, write **"?"** and who would know: a plan that shows what is
 still unknown, and who must answer it, is a good plan.
@@ -20,9 +21,9 @@ still unknown, and who must answer it, is a good plan.
 
 | Minutes | What |
 |---|---|
-| 0–5 | form groups, choose a project |
+| 0–5 | form three groups, choose a project |
 | 5–35 | fill in the template; start with sections 1–2, end with "The plan on one page" |
-| 35–55 | presentations, 4 minutes each, one question from each other group |
+| 35–55 | presentations: 5 minutes each, then 2 minutes of questions |
 | 55–60 | what was hardest to decide, and who in your organisation would decide it |
 
 ## Projects to choose from (if you don't bring your own)
