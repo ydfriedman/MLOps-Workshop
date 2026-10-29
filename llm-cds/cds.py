@@ -259,6 +259,14 @@ def compare_definitions(found, topic, judge_model=JUDGE_MODEL):
     return pd.DataFrame(rows)
 
 
+def show_judged(answers, grades, case_id):
+    """One answer in full (as show), with the judge's grades and its reason first."""
+    g = grades[(grades.answer_id == case_id) & (grades.run == 0)].iloc[0]
+    print(f"JUDGE ({g.grader.replace('judge: ', '')}): " + "  ".join(f"{k} {g[k]}" for k in RUBRIC))
+    print(f"  reason: {g.note}\n")
+    show(answers, case_id)
+
+
 # ---------------------------------------------------------------- cost
 
 
