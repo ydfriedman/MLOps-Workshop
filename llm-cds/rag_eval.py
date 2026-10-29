@@ -175,14 +175,21 @@ def traced_assistant(retriever, settings):
 
 
 def summarise(per_question):
-    """The three scores averaged over the questions the assistant ANSWERED, plus refusals counted separately.
+    """The three scores averaged over the 20 questions the guidelines DO answer, plus refusals counted separately.
 
-    A refusal ("The guidelines provided do not cover this.") is the right answer to an out-of-scope question,
-    but all three judges score it 0: averaging it in would punish the assistant for being honest.
+    - context relevance: the judge's score for every answerable question, answered or not. A wrong refusal usually
+      means the search brought the wrong passages; that must pull the average down, not drop out of it.
+    - groundedness and answer relevancy: 0 for a wrong refusal (the health worker got no answer), the judge's
+      score otherwise.
+    - the 4 out-of-scope questions are not averaged in: refusing them is right, so they are counted instead
+      (refused_out_of_scope should be 4).
     """
-    answered = per_question[~per_question.refused]
+    answerable = per_question[per_question.type != "out_of_scope"]
+    scores = {m: pd.to_numeric(answerable[m], errors="coerce") for m in METRICS}
+    summary = {"context_relevance": scores["context_relevance"].mean()}
+    for m in ("groundedness", "answer_relevancy"):
+        summary[m] = scores[m].where(~answerable.refused, 0.0).mean()
     in_scope = per_question.type != "out_of_scope"
-    summary = {m: pd.to_numeric(answered[m], errors="coerce").mean() for m in METRICS}
     summary["refused_in_scope"] = int((per_question.refused & in_scope).sum())          # should be 0
     summary["refused_out_of_scope"] = int((per_question.refused & ~in_scope).sum())     # should be 4
     return summary

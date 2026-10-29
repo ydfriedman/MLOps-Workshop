@@ -64,8 +64,9 @@ The last line downloads the small embedding model (67 MB) and embeds every passa
 - The 24 questions in `questions.csv`: 20 the guidelines answer (10 in the guidelines' own words, 10 in everyday
   words, the way health workers and families ask) and 4 they don't. No reference answers: the judge needs none.
 - First only the search (which pages come back?), then one question judged by hand, then all 24
-  (`rag_eval.evaluate_setup`, about a minute). Refusals are counted apart: a refusal is the right answer to an
-  out-of-scope question, but the judge scores it 0.
+  (`rag_eval.evaluate_setup`, about a minute). The averages cover the 20 questions the guidelines answer: context
+  relevance for all 20, answered or not (a wrong refusal usually means the search failed); groundedness and answer
+  relevancy count a wrong refusal as 0. Refusing the 4 out-of-scope questions is right, so they are counted instead.
 - `mlflow ui` (in `llm-cds/`): experiment **guideline-assistant**, one run per setup, one trace per question with
   the search, the LLM call and the three scores.
 - **What the checks don't cover:** a page the search missed (an answer can be grounded and still incomplete), and
