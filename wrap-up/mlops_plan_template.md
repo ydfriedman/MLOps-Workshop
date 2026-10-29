@@ -31,7 +31,6 @@ number, a sentence. If you don't know something, write **"?"** and who would kno
 | The decision it supports (who decides what, when) | |
 | What happens today, without the model (the baseline) | |
 | What a wrong output costs: a missed case? a false alarm? | |
-| Risk tier (EAII MLOps Practice Guide; Tier C = routine use for decisions about people's health) | |
 
 ## 2. The data (DVC)
 

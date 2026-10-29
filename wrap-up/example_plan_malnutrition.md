@@ -29,7 +29,6 @@ lessons is SIMULATED; a real plan would name real systems and people.
 | The decision it supports | every month, which children the health extension workers visit first |
 | What happens today | follow-up of children already wasted (MUAC below 12.5 cm); no ranking of the others |
 | What a wrong output costs | a missed child may become malnourished before anyone sees them; a false alarm costs one home visit |
-| Risk tier | Tier C: routine use, decisions about children's health |
 
 ## 2. The data (DVC)
 

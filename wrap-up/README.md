@@ -30,13 +30,11 @@ still unknown, and who must answer it, is a good plan.
 
 | Project | The decision | Things to think about |
 |---|---|---|
-| **Malnutrition risk** (Day 1) | which children get a follow-up visit | already worked through in the example: choose another project, or change one thing (a new region? a model that also uses photos?) |
-| **TB screening from chest X-rays** (Wednesday) | who gets a lab test for TB | a new X-ray machine at a new site; HIV-positive patients |
-| **Amharic speech recognition** (Wednesday) | (depends on its use: transcribing consultations? call-centre messages?) | accents and dialects; what "accuracy" means; recordings are personal data |
-| **HR shortlisting** (Thursday) | which applicants get an interview | fairness between groups; what the label is; who can appeal |
-| **The guideline assistant** (Thursday–Friday) | what a health worker does for a patient | use section 8 of the template |
 | **Crop yield or rainfall forecast** | where to send support before a bad season | the label arrives once a year; the climate changes |
 | **Fraud or error detection in claims or payments** | which claims a person checks | few true cases; what a missed case costs |
+| **Medicine stock-out prediction at health facilities** | which facilities get resupplied first, and how much | stock data reported late or not at all; seasonal disease peaks; a stock-out hides the true demand |
+| **Early warning of school dropout** | which students get a support visit from the school | the label is known only at the end of the year; fairness between girls and boys, regions; data on children |
+| **Routing citizens' complaints or requests** (Amharic and other languages) | which office handles each message, and how urgent it is | several languages; new topics appear after each policy change; wrongly routed messages wait longest |
 
 ## Which week's tool answers which question
 
