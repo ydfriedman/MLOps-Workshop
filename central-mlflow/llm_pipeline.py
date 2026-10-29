@@ -3,7 +3,9 @@ then run two weekly checks.
 
     python llm_pipeline.py
 
-No API key or internet needed: it reads saved evaluation results of the LLM lesson (llm_results/).
+No API key or internet needed: it reads the scores of the four setups in the LLM lesson's notebook 3
+(llm_results/setups.csv): the reference-free Ragas checks (context relevance, groundedness, answer relevancy,
+judged by anthropic/claude-haiku-5.5) on the 24 questions in ../llm-cds/questions.csv, and the refusals.
 What gets versioned here is a **configuration** (documents, chunking, search, language model), because that
 is what defines a version of an LLM application.
 
@@ -25,10 +27,10 @@ HERE = Path(__file__).resolve().parent
 LLM = HERE.parent / "llm-cds"
 REPORTS = HERE / "data" / "reports" / "llm"
 CONFIG = ["docs", "chunking", "retriever", "model"]
-FIXED = {"k": 5, "prompt_version": "v1", "temperature": 0.0}    # the same for every configuration evaluated
-RULE = ("highest factual_correctness among configurations with retrieval_hit_rate >= 0.9 "
-        "and faithfulness >= 0.8")
-AMHARIC_ALERT = 0.2      # drift alert if more than 20% of questions are in Amharic (the champion was tested in English)
+FIXED = {"k": 5, "prompt_version": "v1", "temperature": 0.0, "judge_model": "anthropic/claude-haiku-5.5"}
+RULE = ("highest answer_rate (share of the 20 answerable questions not wrongly refused) among configurations with "
+        "groundedness >= 0.9 that refuse all 4 out-of-scope questions")
+EVERYDAY_ALERT = 0.6     # drift alert if more than 60% of questions use everyday words (the champion was chosen on 50%)
 
 
 def guidelines_md5(revised: dict | None = None) -> str:
@@ -45,8 +47,8 @@ def main():
     tags = hub.use_project("llm-cds", "guideline-assistant", owner="Clinical decision support team", risk_tier="C")
     documents = guidelines_md5()
 
-    # ---- 1. every configuration evaluated in the LLM lesson, as one evaluation run each
-    table = pd.read_csv(HERE / "llm_results" / "search_and_ragas.csv")
+    # ---- 1. every configuration evaluated in the LLM lesson (notebook 3), as one evaluation run each
+    table = pd.read_csv(HERE / "llm_results" / "setups.csv")
     metrics = [c for c in table.columns if c not in CONFIG]
     runs = []
     for _, row in table.iterrows():
@@ -59,38 +61,40 @@ def main():
         runs.append({"run_id": run.info.run_id, "config": config, **{m: row[m] for m in metrics}})
 
     # ---- 2. the written promotion rule picks the champion configuration
-    eligible = [r for r in runs if r["retrieval_hit_rate"] >= 0.9 and r["faithfulness"] >= 0.8]
-    best = max(eligible, key=lambda r: r["factual_correctness"])
+    eligible = [r for r in runs if r["groundedness"] >= 0.9 and r["refused_out_of_scope"] == 4]
+    best = max(eligible, key=lambda r: (r["answer_rate"], r["groundedness"]))
     with mlflow.start_run(run_id=best["run_id"]):
         mlflow.set_tag("promotion_rule", RULE)
-        mlflow.log_artifact(str(HERE / "llm_results" / "search_and_ragas.csv"), artifact_path="reports")
+        mlflow.log_artifact(str(HERE / "llm_results" / "setups.csv"), artifact_path="reports")
         info = mlflow.pyfunc.log_model(name="assistant-config", python_model=str(HERE / "assistant_config_model.py"),
                                        model_config=best["config"] | FIXED | {"guidelines_md5": documents})
-    version = hub.promote(info.model_uri, "llm-cds.guideline-assistant", tags, headline_metric="factual_correctness",
+    version = hub.promote(info.model_uri, "llm-cds.guideline-assistant", tags, headline_metric="answer_rate",
                           description="Answers health workers' questions from six national guidelines (RAG). "
                                       "Promotion rule: " + RULE + ".")
     print(f"{len(runs)} configurations logged; champion llm-cds.guideline-assistant v{version}: "
           f"{best['config']['model']}, {best['config']['docs']}/{best['config']['chunking']}/"
-          f"{best['config']['retriever']}, factual_correctness {best['factual_correctness']:.3f}")
+          f"{best['config']['retriever']}, answer_rate {best['answer_rate']:.2f}")
 
     # ---- 3. weekly checks. Gate: are the documents the ones the champion was evaluated on?
-    #      Drift: are people asking in a language the champion was not evaluated in?
-    #      (The lesson's test questions stand in for a week of real questions.)
+    #      Drift: are people asking in everyday words more than in the questions the champion was chosen on?
+    #      (Notebook 3: keyword search fails on everyday wording.) The lesson's test questions stand in for a week
+    #      of real questions.
     champion = mlflow.pyfunc.load_model("models:/llm-cds.guideline-assistant@champion")   # read from the registry
     evaluated_on = champion.model_config["guidelines_md5"]
-    questions = pd.read_csv(HERE / "llm_results" / "per_question_baseline.csv")
-    amharic = (questions["type"] == "amharic").mean()
+    questions = pd.read_csv(LLM / "questions.csv")
+    questions = questions[questions["type"] == "answerable"]
+    everyday = (questions["wording"] == "everyday").mean()
     cholera = "ephi_cholera_2022.md"
     weeks = {"week 1": guidelines_md5(),
              "week 2": guidelines_md5({cholera: (LLM / "guidelines_md" / cholera).read_text(encoding="utf-8")
                                        + "\n\nRevised edition, 2026.\n"})}       # simulated update
     for week, current in weeks.items():
         same = current == evaluated_on
-        hub.log_check(tags, week, same, amharic > AMHARIC_ALERT,
-                      {"questions": len(questions), "amharic_share": amharic},
+        hub.log_check(tags, week, same, everyday > EVERYDAY_ALERT,
+                      {"questions": len(questions), "everyday_wording_share": everyday},
                       notes="" if same else "guideline documents changed since the champion was evaluated "
                                             f"({cholera}): re-run the evaluation before using the new text")
-        print(f"  {week}: documents {'unchanged' if same else 'CHANGED'}, {amharic:.0%} of questions in Amharic")
+        print(f"  {week}: documents {'unchanged' if same else 'CHANGED'}, {everyday:.0%} of questions in everyday words")
 
 
 if __name__ == "__main__":

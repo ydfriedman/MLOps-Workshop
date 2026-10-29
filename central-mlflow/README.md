@@ -60,13 +60,13 @@ says otherwise.
 | | Malnutrition (`malnutrition_pipeline.py`) | TB (`tb_pipeline.py`) | LLM assistant (`llm_pipeline.py`) |
 |---|---|---|---|
 | **Experiment** | `malnutrition/gam-risk` | `tb/cxr-screening` | `llm-cds/guideline-assistant` |
-| **Training / evaluation** | logistic model, Jan–Oct 2024 | logistic on image features, Kanyama | 7 configurations evaluated in the LLM lesson |
+| **Training / evaluation** | logistic model, Jan–Oct 2024 | logistic on image features, Kanyama | the 4 setups of the LLM lesson's notebook 3 (reference-free Ragas checks) |
 | **Champion** | `malnutrition.gam-risk@champion` | `tb.cxr-screening@champion` | `llm-cds.guideline-assistant@champion` (a configuration) |
-| **Headline metric** | ROC-AUC 0.812 | ROC-AUC 0.804 | factual correctness 0.615 |
+| **Headline metric** | ROC-AUC 0.812 | ROC-AUC 0.804 | answer rate 0.90 (answerable questions not wrongly refused) |
 | **Monitoring periods** | 7 months (Jan–Jul 2025) | 3 new sites | 2 weeks |
 | **Data gate** | Great Expectations: lesson 02's suite, unchanged | Great Expectations on the DICOM headers | are the guideline documents the ones it was evaluated on? |
-| **Drift** | Evidently: lessons 05–06's tests | can a classifier tell the site's images from Kanyama's? | share of questions in Amharic |
-| **Performance** | observed / predicted, 3 months late | sensitivity and ROC-AUC from lab results | pending: needs expert review |
+| **Drift** | Evidently: lessons 05–06's tests | can a classifier tell the site's images from Kanyama's? | share of questions in everyday words (keyword search fails on them) |
+| **Performance** | observed / predicted, 3 months late | sensitivity and ROC-AUC from lab results | pending: needs clinicians' review (LLM lesson, notebook 5) |
 | **What happens** | Feb blocked (messy export), Mar drift (new regions), **Jul performance alert** (food distribution stopped in April) | **Chainda South blocked** (different X-ray machine); Chawama and HIV-positive patients: performance alerts | **week 2 blocked**: a revised cholera guideline (simulated) must be re-evaluated first |
 
 Each monitoring run also keeps the tools' own reports as files (`reports/` in the run's artifacts): the full
